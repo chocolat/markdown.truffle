@@ -1,0 +1,15 @@
+(trigger
+    (key [[ctrl][cmd]P]))
+
+(name [Generate Output and Open in Browser])
+
+(only-in text.html.markdown.multimarkdown)
+
+(input selection document)
+
+(output nothing)
+
+(save nothing)
+
+(script [MultiMarkdown.pl|"${TM_SMARTYPANTS:-SmartyPants.pl}" > "${TM_DIRECTORY:-/tmp}"/output.html
+open "${TM_DIRECTORY:-/tmp}"/output.html])

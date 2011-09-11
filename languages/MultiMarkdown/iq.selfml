@@ -1,0 +1,75 @@
+(detector
+    (content-matches [^Format:\s*(?i:complete)\s*$]))
+
+(folding
+    (start [(?x)
+		(<(?i:head|body|table|thead|tbody|tfoot|tr|div|select|fieldset|style|script|ul|ol|form|dl)\b.*?>
+		|<!--(?!.*-->)
+		|\{\s*($|\?>\s*$|//|/\*(.*\*/\s*$|(?!.*?\*/)))
+		)])
+    (stop [(?x)
+		(</(?i:head|body|table|thead|tbody|tfoot|tr|div|select|fieldset|style|script|ul|ol|form|dl)>
+		|^\s*-->
+		|(^|\s)\}
+		)]))
+
+(in [text.html.markdown meta.reference, meta.link.markdown entity.name]
+    (no-spellchecking))
+
+(in markup.raw.block.markdown
+    (indentation.decrease [^(.*\*/)?\s*\}[;\s]*$])
+    (indentation.increase [^.*(\{[^}"']*|\([^)"']*)$]))
+
+(in text.html.markdown
+    (pair "
+        "
+        (smart-typing))
+    (pair “
+        ”
+        (smart-typing))
+    (pair `[`
+        `]`
+        (smart-typing))
+    (pair _
+        _
+        (smart-typing))
+    (pair [`]
+        [`]
+        (smart-typing))
+    (pair [(]
+        [)]
+        (smart-typing))
+    (pair <
+        >
+        (smart-typing))
+    (pair [{]
+        [}]
+        (smart-typing)))
+
+(in [text.html.markdown markup.heading.markdown]
+    (symbol-list
+        (transformation [
+		s/\s*#*\s*\z//g;			# strip trailing space and #'s
+		s/(?<=#)#/ /g;			# change all but first # to m-space
+		s/^#( *)\s+(.*)/$1$2/;		# strip first # and space before title
+	])))
+
+(in [text.html.markdown markup.raw, text.html.markdown meta.link]
+    (pair “
+        ”
+        (smart-typing))
+    (pair `[`
+        `]`
+        (smart-typing))
+    (pair [(]
+        [)]
+        (smart-typing))
+    (pair [`]
+        [`]
+        (smart-typing))
+    (pair "
+        "
+        (smart-typing))
+    (pair [{]
+        [}]
+        (smart-typing)))

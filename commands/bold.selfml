@@ -1,0 +1,30 @@
+(trigger
+    (key [[cmd]B]))
+
+(name Bold)
+
+(only-in [text.html.markdown -meta.disable-markdown])
+
+(input selection word)
+
+(output snippet)
+
+(save nothing)
+
+(script [#!/usr/bin/env ruby
+$: << ENV['TM_SUPPORT_PATH'] + '/lib'
+require 'escape'
+def esc(str)
+  e_sn(str).gsub(/\}/, '\\}') # escaping inside a placeholder
+end
+
+s = STDIN.read
+if s.empty? then
+  print "**$1**"
+elsif s =~ /^\*{2}(.*)\*{2}$/ then
+  print "${1:#{esc $1}}"
+elsif ENV.has_key? 'TM_SELECTED_TEXT'
+  print "${1:**#{esc s}**}"
+else
+  print "**#{e_sn s}**"
+end])

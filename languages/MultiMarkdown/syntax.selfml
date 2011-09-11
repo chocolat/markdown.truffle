@@ -1,0 +1,19 @@
+(root text.html.markdown.multimarkdown
+    (zone meta.header.multimarkdown
+        (start
+            (regex [^([A-Za-z0-9]+)(:)\s*]
+                (1 keyword.other.multimarkdown)
+                (2 punctuation.separator.key-value.multimarkdown)))
+        (end
+            (regex [^$|^(?=[A-Za-z0-9]+:)]))
+        (subzones
+            (zone string.unquoted.multimarkdown
+                (match
+                    (regex .+)))))
+    (zone meta.content.multimarkdown
+        (start
+            (regex [^(?!=[A-Za-z0-9]+:)]))
+        (end
+            (regex [^(?=not)possible$]))
+        (subzones
+            (include text.html.markdown))))

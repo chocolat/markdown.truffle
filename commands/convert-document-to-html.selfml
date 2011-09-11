@@ -1,0 +1,29 @@
+(trigger
+    (key [[ctrl][shift]H]))
+
+(name [Convert Document / Selection to HTML])
+
+(only-in text.html.markdown)
+
+(input selection document)
+
+(output replace-selected)
+
+(save nothing)
+
+(script [#!/bin/bash
+# This command works well when you use the TextMate service from a 
+# web-log editor like Ecto or MarsEdit.  You can write in markdown
+# and then convert back to html before save and close.
+
+"${TM_MARKDOWN:-Markdown.pl}"|"${TM_SMARTYPANTS:-SmartyPants.pl}"|perl -pe '
+	# make <h1>Header</h1> into <h1 id="header">Header</h1>
+	# so that we can link to page#header
+	if(($tag, $title) = /<(h[1-6])>(.*?)<\/\1>/) {
+		$_ = $title;
+		s/<[^>]+>|&\w+;//g;	# remove tag and entities
+		s/[^-_ \/\w]//g;		# remove all but word and separators
+		s/[-_ \/]+/_/g;		# collapse all separators into _
+		$_ = "<$tag id=\"" . (lc $_) . "\">$title</$tag>\n";
+	}'
+])

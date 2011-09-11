@@ -1,0 +1,13 @@
+(trigger)
+
+(name [Convert Document / Selection to LaTeX (Memoir)])
+
+(only-in text.html.markdown.multimarkdown)
+
+(input selection document)
+
+(output new-document)
+
+(save nothing)
+
+(script [InsertFormatHeader.rb|MultiMarkdown.pl|SmartyPants.pl|xsltproc -novalid -nonet "$TM_BUNDLE_SUPPORT/xhtml2memoir.xslt" -])

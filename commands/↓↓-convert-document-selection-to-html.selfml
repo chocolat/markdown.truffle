@@ -1,0 +1,14 @@
+(trigger
+    (key [[ctrl][shift]H]))
+
+(name [Convert Document / Selection to HTML])
+
+(only-in text.html.markdown.multimarkdown)
+
+(input selection document)
+
+(output new-document)
+
+(save nothing)
+
+(script [InsertFormatHeader.rb|MultiMarkdown.pl|"${TM_SMARTYPANTS:-SmartyPants.pl}"])

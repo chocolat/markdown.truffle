@@ -1,0 +1,5 @@
+(menu command.convert-document-to-html
+    ---
+    (submenu MultiMarkdown command.↓↓-generate-output-and-open-in-browser --- command.↓↓-convert-document-selection-to-html command.↓↓-convert-document-selection-to-latex [command.↓↓-convert-document-selection-to-latex-(memoir)] command.↓↓-convert-document-selection-to-pdf command.↓↓-convert-document-selection-to-rtf)
+    (submenu Format command.bold command.italic)
+    snippet.hard-linebreak)

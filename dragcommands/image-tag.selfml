@@ -1,0 +1,17 @@
+(name [Insert Image Tag])
+
+(only-in [text.html.markdown -meta.disable-markdown])
+
+(output snippet)
+
+(file-extensions png PNG jpeg JPEG jpg JPG gif GIF)
+
+(script [base=${TM_DROPPED_FILE##*/}
+alt=$(tr <<<${base%.*} '[_-]' ' '|perl -pe 's/(\w+)/\u$1/g')
+if [ -n "$TM_DROPPED_FILE_STRIP_ROOT" ]
+then
+	file=$(sed -e "s|^$TM_DROPPED_FILE_STRIP_ROOT||" <<< $TM_DROPPED_FILE);
+else
+	file=${TM_DROPPED_FILE};
+fi
+echo -n "![\${1:$alt}]($file)"])

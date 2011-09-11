@@ -1,0 +1,9 @@
+(name [Insert HTML File as Markdown])
+
+(only-in text.html.markdown)
+
+(output snippet)
+
+(file-extensions html htm)
+
+(script [python "$TM_BUNDLE_SUPPORT/bin/html2text.py" <"$TM_DROPPED_FILE"|perl -pe 's/\\/\\\\/g; s/`/\\`/g; s/\$/\\\$/g'])

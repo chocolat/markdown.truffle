@@ -1,0 +1,9 @@
+(name [Hard Linebreak])
+
+(trigger
+    (key [[ctrl][enter]]))
+
+(only-in [text.html.markdown -meta.disable-markdown])
+
+(snippet [  
+])

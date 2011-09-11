@@ -1,0 +1,476 @@
+(root text.html.markdown
+    (zone meta.block-level.markdown
+        (start
+            (regex [(?x)^
+				(?=	[ ]{,3}>.
+				|	([ ]{4}|\t)(?!$)
+				|	[#]{1,6}\s*+
+				|	[ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+				)]))
+        (end
+            (regex [(?x)^
+				(?!	[ ]{,3}>.
+				|	([ ]{4}|\t)
+				|	[#]{1,6}\s*+
+				|	[ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+				)]))
+        (subzones
+            (include @block_quote)
+            (include @block_raw)
+            (include @heading)
+            (include @separator)))
+    (zone markup.list.unnumbered.markdown
+        (start
+            (regex [^[ ]{0,3}([*+-])(?=\s)]
+                (1 punctuation.definition.list_item.markdown)))
+        (end
+            (regex [^(?=\S)]
+                (1 punctuation.definition.list_item.markdown)))
+        (subzones
+            (include @list-paragraph)))
+    (zone markup.list.numbered.markdown
+        (start
+            (regex [^[ ]{0,3}([0-9]+\.)(?=\s)]
+                (1 punctuation.definition.list_item.markdown)))
+        (end
+            (regex [^(?=\S)]
+                (1 punctuation.definition.list_item.markdown)))
+        (subzones
+            (include @list-paragraph)))
+    (zone meta.disable-markdown
+        (start
+            (regex [^(?=<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del)\b)(?!.*?</\1>)]))
+        (end
+            (regex [(?<=^</\1>$\n)]))
+        (subzones
+            (include text.html.basic)))
+    (zone meta.disable-markdown
+        (start
+            (regex [^(?=<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del)\b)]))
+        (end
+            (regex $\n?))
+        (subzones
+            (include text.html.basic)))
+    (zone meta.link.reference.def.markdown
+        (match
+            (regex [(?x:
+				\s*						# Leading whitespace
+				(\[)(.+?)(\])(:)		# Reference name
+				[ \t]*					# Optional whitespace
+				(<?)(\S+?)(>?)			# The url
+				[ \t]*					# Optional whitespace
+				(?:
+					  ((\().+?(\)))		# Match title in quotes…
+					| ((").+?("))		# or in parens.
+				)?						# Title is optional
+				\s*						# Optional whitespace
+				$
+			)]
+                (10 punctuation.definition.string.end.markdown)
+                (2 constant.other.reference.link.markdown)
+                (3 punctuation.definition.constant.markdown)
+                (11 string.other.link.description.title.markdown)
+                (4 punctuation.separator.key-value.markdown)
+                (5 punctuation.definition.link.markdown)
+                (12 punctuation.definition.string.begin.markdown)
+                (6 markup.underline.link.markdown)
+                (13 punctuation.definition.string.end.markdown)
+                (7 punctuation.definition.link.markdown)
+                (8 string.other.link.description.title.markdown)
+                (1 punctuation.definition.constant.markdown)
+                (9 punctuation.definition.string.begin.markdown))))
+    (zone meta.paragraph.markdown
+        (start
+            (regex [^(?=\S)(?![=-]{3,}(?=$))]))
+        (end
+            (regex [^(?:\s*$|(?=[ ]{,3}>.))|(?=[ \t]*\n)(?<=^===|^====|=====|^---|^----|-----)[ \t]*\n|(?=^#)]))
+        (subzones
+            (include @inline)
+            (include text.html.basic)
+            (zone markup.heading.1.markdown
+                (match
+                    (regex [^(={3,})(?=[ \t]*$)]
+                        (1 punctuation.definition.heading.markdown))))
+            (zone markup.heading.2.markdown
+                (match
+                    (regex [^(-{3,})(?=[ \t]*$)]
+                        (1 punctuation.definition.heading.markdown)))))))
+
+(collection link-inline
+    (zone meta.link.inline.markdown
+        (match
+            (regex [(?x:
+				(\[)((?<square>[^\[\]\\]|\\.|\[\g<square>*+\])*+)(\])	
+											# Match the link text.
+				([ ])?						# Space not allowed
+				(\()						# Opening paren for url
+					(<?)(.*?)(>?)			# The url
+					[ \t]*					# Optional whitespace
+					(?:
+						  ((\().+?(\)))		# Match title in parens…
+						| ((").+?("))		# or in quotes.
+					)?						# Title is optional
+					\s*						# Optional whitespace
+				(\))
+			 )]
+                (10 string.other.link.description.title.markdown)
+                (2 string.other.link.title.markdown)
+                (15 punctuation.definition.string.end.markdown)
+                (11 punctuation.definition.string.begin.markdown)
+                (16 punctuation.definition.metadata.markdown)
+                (4 punctuation.definition.string.end.markdown)
+                (5 invalid.illegal.whitespace.markdown)
+                (12 punctuation.definition.string.end.markdown)
+                (6 punctuation.definition.metadata.markdown)
+                (13 string.other.link.description.title.markdown)
+                (7 punctuation.definition.link.markdown)
+                (8 markup.underline.link.markdown)
+                (14 punctuation.definition.string.begin.markdown)
+                (1 punctuation.definition.string.begin.markdown)
+                (9 punctuation.definition.link.markdown)))))
+
+(collection image-inline
+    (zone meta.image.inline.markdown
+        (match
+            (regex [(?x:
+				\!							# Images start with !
+				(\[)((?<square>[^\[\]\\]|\\.|\[\g<square>*+\])*+)(\])	
+											# Match the link text.
+				([ ])?						# Space not allowed
+				(\()						# Opening paren for url
+					(<?)(\S+?)(>?)			# The url
+					[ \t]*					# Optional whitespace
+					(?:
+						  ((\().+?(\)))		# Match title in parens…
+						| ((").+?("))		# or in quotes.
+					)?						# Title is optional
+					\s*						# Optional whitespace
+				(\))
+			 )]
+                (10 string.other.link.description.title.markdown)
+                (2 string.other.link.description.markdown)
+                (15 punctuation.definition.string.markdown)
+                (3 punctuation.definition.string.end.markdown)
+                (11 punctuation.definition.string.markdown)
+                (16 punctuation.definition.metadata.markdown)
+                (5 invalid.illegal.whitespace.markdown)
+                (12 punctuation.definition.string.markdown)
+                (6 punctuation.definition.metadata.markdown)
+                (13 string.other.link.description.title.markdown)
+                (7 punctuation.definition.link.markdown)
+                (8 markup.underline.link.image.markdown)
+                (14 punctuation.definition.string.markdown)
+                (1 punctuation.definition.string.begin.markdown)
+                (9 punctuation.definition.link.markdown)))))
+
+(collection image-ref
+    (zone meta.image.reference.markdown
+        (match
+            (regex [\!(\[)((?<square>[^\[\]\\]|\\.|\[\g<square>*+\])*+)(\])[ ]?(\[)(.*?)(\])]
+                (7 punctuation.definition.constant.markdown)
+                (4 punctuation.definition.string.begin.markdown)
+                (5 punctuation.definition.constant.markdown)
+                (1 punctuation.definition.string.begin.markdown)
+                (6 constant.other.reference.link.markdown)
+                (2 string.other.link.description.markdown)))))
+
+(collection list-paragraph
+    (zone meta.paragraph.list.markdown
+        (start
+            (regex [\G\s+(?=\S)]))
+        (end
+            (regex ^\s*$))
+        (subzones
+            (include @inline)
+            (zone
+                (match
+                    (regex [^\s*([*+-]|[0-9]+\.)]
+                        (1 punctuation.definition.list_item.markdown)))))))
+
+(collection escape
+    (zone constant.character.escape.markdown
+        (match
+            (regex [\\[-`*_#+.!(){}\[\]\\>]]))))
+
+(collection italic
+    (zone markup.italic.markdown
+        (start
+            (regex `(?x)
+						(\*|_)(?=\S)								# Open
+						(?=
+							(
+							    <[^>]*+>							# HTML tags
+							  | (?<raw>``+)([^``]|(?!(?<!``)\k<raw>(?!``))``)*+\k<raw>
+																	# Raw
+							  | \\[\\``*_{}\[\]()#.!+\->]?+			# Escapes
+							  | \[
+								(				
+								        (?<square>					# Named group
+											[^\[\]\\]				# Match most chars
+								          | \\.						# Escaped chars
+								          | \[ \g<square>*+ \]		# Nested brackets
+								        )*+
+									\]
+									(
+										(							# Reference Link
+											[ ]?					# Optional space
+											\[[^\]]*+\]				# Ref name
+										)
+									  | (							# Inline Link
+											\(						# Opening paren
+												[ \t]*+				# Optional whtiespace
+												<?(.*?)>?			# URL
+												[ \t]*+				# Optional whtiespace
+												(					# Optional Title
+													(?<title>['"])
+													(.*?)
+													\k<title>
+												)?
+											\)
+										)
+									)
+								)
+							  | \1\1								# Must be bold closer
+							  | (?!(?<=\S)\1).						# Everything besides
+																	# style closer
+							)++
+							(?<=\S)\1								# Close
+						)
+					`
+                (1 punctuation.definition.italic.markdown)))
+        (end
+            (regex [(?<=\S)(\1)((?!\1)|(?=\1\1))]
+                (1 punctuation.definition.italic.markdown)))
+        (subzones
+            (zone
+                (start
+                    (regex [(?=<[^>]*?>)]))
+                (end
+                    (regex [(?<=>)]))
+                (subzones
+                    (include text.html.basic)))
+            (include @escape)
+            (include @ampersand)
+            (include @bracket)
+            (include @raw)
+            (include @bold)
+            (include @image-inline)
+            (include @link-inline)
+            (include @link-inet)
+            (include @link-email)
+            (include @image-ref)
+            (include @link-ref-literal)
+            (include @link-ref))))
+
+(collection line-break
+    (zone meta.dummy.line-break
+        (match [ {2,}]
+            (anchor.right))))
+
+(collection bracket
+    (zone meta.other.valid-bracket.markdown
+        (match
+            (regex [<(?![a-z/?\$!])]))))
+
+(collection bold
+    (zone markup.bold.markdown
+        (start
+            (regex `(?x)
+						(\*\*|__)(?=\S)								# Open
+						(?=
+							(
+							    <[^>]*+>							# HTML tags
+							  | (?<raw>``+)([^``]|(?!(?<!``)\k<raw>(?!``))``)*+\k<raw>
+																	# Raw
+							  | \\[\\``*_{}\[\]()#.!+\->]?+			# Escapes
+							  | \[
+								(				
+								        (?<square>					# Named group
+											[^\[\]\\]				# Match most chars
+								          | \\.						# Escaped chars
+								          | \[ \g<square>*+ \]		# Nested brackets
+								        )*+
+									\]
+									(
+										(							# Reference Link
+											[ ]?					# Optional space
+											\[[^\]]*+\]				# Ref name
+										)
+									  | (							# Inline Link
+											\(						# Opening paren
+												[ \t]*+				# Optional whtiespace
+												<?(.*?)>?			# URL
+												[ \t]*+				# Optional whtiespace
+												(					# Optional Title
+													(?<title>['"])
+													(.*?)
+													\k<title>
+												)?
+											\)
+										)
+									)
+								)
+							  | (?!(?<=\S)\1).						# Everything besides
+																	# style closer
+							)++
+							(?<=\S)\1								# Close
+						)
+					`
+                (1 punctuation.definition.bold.markdown)))
+        (end
+            (regex [(?<=\S)(\1)]
+                (1 punctuation.definition.bold.markdown)))
+        (subzones
+            (zone
+                (start
+                    (regex [(?=<[^>]*?>)]))
+                (end
+                    (regex [(?<=>)]))
+                (subzones
+                    (include text.html.basic)))
+            (include @escape)
+            (include @ampersand)
+            (include @bracket)
+            (include @raw)
+            (include @italic)
+            (include @image-inline)
+            (include @link-inline)
+            (include @link-inet)
+            (include @link-email)
+            (include @image-ref)
+            (include @link-ref-literal)
+            (include @link-ref))))
+
+(collection link-email
+    (zone meta.link.email.lt-gt.markdown
+        (match
+            (regex [(<)((?:mailto:)?[-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(>)]
+                (4 punctuation.definition.link.markdown)
+                (1 punctuation.definition.link.markdown)
+                (2 markup.underline.link.markdown)))))
+
+(collection inline
+    (include @escape)
+    (include @ampersand)
+    (include @bracket)
+    (include @raw)
+    (include @bold)
+    (include @italic)
+    (include @line-break)
+    (include @image-inline)
+    (include @link-inline)
+    (include @link-inet)
+    (include @link-email)
+    (include @image-ref)
+    (include @link-ref-literal)
+    (include @link-ref))
+
+(collection heading
+    (zone markup.heading.markdown
+        (start
+            (regex [\G(#{1,6})(?!#)\s*(?=\S)]
+                (1 punctuation.definition.heading.markdown)))
+        (end
+            (regex [\s*(#*)$\n?]
+                (1 punctuation.definition.heading.markdown)))
+        (subzones
+            (include @inline))))
+
+(collection link-ref
+    (zone meta.link.reference.markdown
+        (match
+            (regex `(\[)((?<square>[^\[\]\\]|\\.|\[\g<square>*+\])*+)(\])[ ]?(\[)([^\]]*+)(\])`
+                (7 punctuation.definition.constant.end.markdown)
+                (4 punctuation.definition.string.end.markdown)
+                (5 punctuation.definition.constant.begin.markdown)
+                (1 punctuation.definition.string.begin.markdown)
+                (6 constant.other.reference.link.markdown)
+                (2 string.other.link.title.markdown)))))
+
+(collection ampersand
+    (zone meta.other.valid-ampersand.markdown
+        (match
+            (regex [&(?!([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+);)]))))
+
+(collection link-inet
+    (zone meta.link.inet.markdown
+        (match
+            (regex [(<)((?:https?|ftp)://.*?)(>)]
+                (3 punctuation.definition.link.markdown)
+                (1 punctuation.definition.link.markdown)
+                (2 markup.underline.link.markdown)))))
+
+(collection link-ref-literal
+    (zone meta.link.reference.literal.markdown
+        (match
+            (regex [(\[)((?<square>[^\[\]\\]|\\.|\[\g<square>*+\])*+)(\])[ ]?(\[)(\])]
+                (4 punctuation.definition.string.end.markdown)
+                (5 punctuation.definition.constant.begin.markdown)
+                (1 punctuation.definition.string.begin.markdown)
+                (6 punctuation.definition.constant.end.markdown)
+                (2 string.other.link.title.markdown)))))
+
+(collection block_raw
+    (zone markup.raw.block.markdown
+        (match
+            (regex [\G([ ]{4}|\t).*$\n?]))))
+
+(collection raw
+    (zone markup.raw.inline.markdown
+        (match
+            (regex [(`+)([^`]|(?!(?<!`)\1(?!`))`)*+(\1)]
+                (3 punctuation.definition.raw.markdown)
+                (1 punctuation.definition.raw.markdown)))))
+
+(collection block_quote
+    (zone markup.quote.markdown
+        (start
+            (regex [\G[ ]{,3}(>)(?!$)[ ]?]
+                (1 punctuation.definition.blockquote.markdown)))
+        (end
+            (regex [(?x)^
+				(?=	\s*$
+				|	[ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+				|	[ ]{,3}>.
+				)]))
+        (subzones
+            (zone
+                (start
+                    (regex [(?x)\G
+						(?=	[ ]{,3}>.
+						)]))
+                (end
+                    (regex ^))
+                (subzones
+                    (include @block_quote)))
+            (zone
+                (start
+                    (regex [(?x)\G
+						(?=	([ ]{4}|\t)
+						|	[#]{1,6}\s*+
+						|	[ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+						)]))
+                (end
+                    (regex ^))
+                (subzones
+                    (include @block_raw)
+                    (include @heading)
+                    (include @separator)))
+            (zone
+                (start
+                    (regex [(?x)\G
+						(?!	$
+						|	[ ]{,3}>.
+						|	([ ]{4}|\t)
+						|	[#]{1,6}\s*+
+						|	[ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+						)]))
+                (end
+                    (regex [$|(?<=\n)]))
+                (subzones
+                    (include @inline))))))
+
+(collection separator
+    (zone meta.separator.markdown
+        (match
+            (regex [\G[ ]{,3}([-*_])([ ]{,2}\1){2,}[ \t]*$\n?]))))
